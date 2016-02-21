@@ -3,6 +3,8 @@
 ## Features
 An ArcGIS for JavaScript API widget for finding map locations in different coordinate notations.
 
+[View it live](http://joerogan.ca/maps/joegis/)
+
 ### Supported Notations
 - Military grid reference system (MGRS)
 - Latitude / Longitude in decimal degrees (Lat/Lon DD)
@@ -10,8 +12,6 @@ An ArcGIS for JavaScript API widget for finding map locations in different coord
 
 ### Known Issues
 - MGRS polar regions (outside latitude -80, +84) are not supported
-
-[View it live](http://joerogan.ca/maps/joegis/)
 
 ### Future Changes
 - Add map click event that fills all fields.
@@ -32,8 +32,10 @@ var location = new Location({
 location.startup();
 ```
 
- [New to Github? Get started here.](https://github.com/)
-
+## Requirements
+* Notepad or HTML editor
+* A little background with JavaScript
+* Experience with the [ArcGIS API for JavaScript](https://developers.arcgis.com/javascript/) would help.
 
 ## Setup
 Set your dojo config to load the module.
@@ -73,16 +75,8 @@ Location(options, srcNode);
 ### startup
 startup(): Start the widget.
 
-
-## Requirements
-* Notepad or HTML editor
-* A little background with JavaScript
-* Experience with the [ArcGIS API for JavaScript](https://developers.arcgis.com/javascript/) would help.
-
 ## Issues
 Find a bug or want to request a new feature?  Please let us know by submitting an issue.
-
-
 
 ## Contributing
 Anyone and everyone is welcome to contribute.
