@@ -9,13 +9,14 @@ An ArcGIS for JavaScript API widget for finding map locations in different coord
 - Military grid reference system (MGRS)
 - Latitude / Longitude in decimal degrees (Lat/Lon DD)
 - Latitude / Longitude in degrees/minutes/seconds (Lat/Lon DMS)
+- what3words (Requires API key and internet access.)
 
 ### Known Issues
 - MGRS polar regions (outside latitude -80, +84) are not supported
 
 ### Future Changes
 - Clear button clears only graphics added by this widget.
-- Add more coordinate notations (DDS, UTM, what3words, etc)
+- Add more coordinate notations (Lat/Lon DDS, UTM, etc)
 
 ## Quickstart
 
@@ -65,6 +66,8 @@ Location(options, srcNode);
 |showLatLon||boolean|true|Shows the Lat/Lon tab.|
 |showMGRS||boolean|true|Shows the MGRS tab.|
 |showUTM||boolean|false|Shows the UTM tab.  Incomplete functionality.|
+|showw3w||boolean|false|Shows the what3words tab.  (Requires API key and internet access.)|
+|w3wAPIKey||string||what3words API Key.  Required when using w3w tab.|
 
 ## Methods
 ### startup

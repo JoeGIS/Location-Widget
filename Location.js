@@ -2,7 +2,7 @@
 ///////////////////////////////------Location.js-------//////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 // 
-// Version: 2.0
+// Version: 2.1
 // Author: Joseph Rogan (joseph.rogan@forces.gc.ca canadajebus@gmail.com)
 // 
 // 
@@ -17,6 +17,8 @@
 //
 // 
 // Changes:
+// Version 2.1
+//  - Added what3words support.  Requires API key and internet access.
 // Version 2.0
 //  - Major code structure, html template, and css changes.
 //  - Removed default field strings.
@@ -43,6 +45,7 @@ define([
     
     "esri/Color",
     "esri/graphic", 
+    "esri/request", 
     "esri/SpatialReference",  
     "esri/geometry/Point", 
     "esri/geometry/webMercatorUtils", 
@@ -60,7 +63,7 @@ define([
 ], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, 
     ContentPane, TabContainer, 
     declare, lang, on, require, 
-    Color, Graphic, SpatialReference, Point, webMercatorUtils, Font, SimpleMarkerSymbol, SimpleLineSymbol, TextSymbol, 
+    Color, Graphic, request, SpatialReference, Point, webMercatorUtils, Font, SimpleMarkerSymbol, SimpleLineSymbol, TextSymbol, 
     usng, 
     dijitTemplate)
 {
@@ -81,7 +84,9 @@ define([
             theme: "locationWidget",
             showLatLon: true,
             showMGRS: true,
-            showUTM: false
+            showUTM: false,
+            showw3w: false,
+            w3wAPIKey: ""
         },
         
         
@@ -100,6 +105,7 @@ define([
                 inputDD: "inputDD",
                 inputDMS: "inputDMS",
                 selectHemi: "selectHemi",
+                inputw3w: "inputw3w", 
                 smallText: "smallText"
             };
             
@@ -163,16 +169,6 @@ define([
                     }
                 }
                 
-                // If there is a UTM tab
-                if (_this.showUTM)
-                {
-                    // Get and format MGRS (Polar zones are not supported)
-                    var mgrs = usng.LLtoMGRS(mp.y, mp.x, 5);
-                    if (mgrs.indexOf("NaN") == -1) mgrs = _this._addSpacesToMGRS(mgrs);
-                    else mgrs = "Undetermined";
-                    _this.inputUTM.value = mgrs;
-                }
-                
                 // If there is a MGRS tab
                 if (_this.showMGRS)
                 {
@@ -183,14 +179,43 @@ define([
                     _this.inputMGRS.value = mgrs;
                 }
                 
+                // If there is a UTM tab
+                if (_this.showUTM)
+                {
+                    // Get and format MGRS (Polar zones are not supported)
+                    var mgrs = usng.LLtoMGRS(mp.y, mp.x, 5);
+                    if (mgrs.indexOf("NaN") == -1) mgrs = _this._addSpacesToMGRS(mgrs);
+                    else mgrs = "Undetermined";
+                    _this.inputUTM.value = mgrs;
+                }
+                
+                // If there is a w3w tab
+                if (_this.showw3w)
+                {
+                    //Request the w3w
+                    var w3wRequest = request({
+                        url: "http://api.what3words.com/position", 
+                        handleAs: "json",
+                        content: {
+                            key: _this.w3wAPIKey,
+                            lang: "en",
+                            position: "'" + mp.y + "," + mp.x + "'"
+                        }
+                        });
+                    // Handle the response
+                    w3wRequest.then( function(response){
+                        _this.inputw3w.value = response.words[0] + "." + response.words[1] + '.' + response.words[2];
+                        });
+                }
                 
             });
             
             
             // Remove tabs that have had showName set to false
             if (!this.showLatLon) this.tc.removeChild(this.tabLatLon);
-            if (!this.showUTM) this.tc.removeChild(this.tabUTM);
             if (!this.showMGRS) this.tc.removeChild(this.tabMGRS);
+            if (!this.showUTM) this.tc.removeChild(this.tabUTM);
+            if (!this.showw3w) this.tc.removeChild(this.tabw3w);
             
         },
         
@@ -290,6 +315,27 @@ define([
                     if (action == "GoTo") this._goTo(lat, lon);
                     else if (action == "AddPoint") this._addPoint(lat, lon);
                 }
+            }
+            // w3w tab
+            else if (this.tc.selectedChildWidget.title == "w3w")
+            {
+                //Request the w3w
+                var w3wRequest = request({
+                    url: "http://api.what3words.com/w3w", 
+                    handleAs: "json",
+                    content: {
+                        key: this.w3wAPIKey,
+                        lang: "en",
+                        string: this.inputw3w.value
+                    }
+                    });
+                // Handle the response
+                var _this = this;
+                w3wRequest.then( function(response, $action, $_this){
+                    // Do the action
+                    if (action == "GoTo") _this._goTo(response.position[0], response.position[1]);
+                    else if (action == "AddPoint") _this._addPoint(response.position[0], response.position[1]);
+                    });
             }
         },
         

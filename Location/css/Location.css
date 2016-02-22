@@ -46,6 +46,12 @@
     vertical-align: middle;
 }
 
+.locationWidget .inputw3w {
+    width: 200px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .locationWidget .smallText {
     font-weight: normal;
     font-size: 7px;
