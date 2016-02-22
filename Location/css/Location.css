@@ -1,8 +1,13 @@
 
 .locationWidget .tc {
-    width:345px;
-    height:120px;
+    width: 310px;
+    height: 100px;
 }
+
+.locationWidget .tab {
+    height: 65px;
+}
+
 
 .locationWidget .label {
     width: 80px;
@@ -11,19 +16,25 @@
     padding-top: 2px;
 }
 
-.locationWidget .inputFieldMGRS {
+.locationWidget .inputMGRS {
     width: 134px;
     display: inline-block;
     vertical-align: middle;
 }
 
-.locationWidget .inputFieldDD {
-    width: 134px;
+.locationWidget .selectLatLonFormat {
+    width: 211px;
     display: inline-block;
     vertical-align: middle;
 }
 
-.locationWidget .inputFieldDMS {
+.locationWidget .inputDD {
+    width: 135px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.locationWidget .inputDMS {
     width: 35px;
     display: inline-block;
     vertical-align: middle;

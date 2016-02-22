@@ -2,63 +2,77 @@
     
     <link rel="stylesheet" href="${css_path}"/>
     
-    <div data-dojo-attach-point="LocationTabContainer" data-dojo-type="dijit/layout/TabContainer" data-dojo-props="doLayout:false" class="${css.tc}">
+    <div data-dojo-attach-point="tc" data-dojo-type="dijit/layout/TabContainer" data-dojo-props="doLayout:false" class="${css.tc}">
     
-        <div data-dojo-attach-point="LocationMGRSDiv" data-dojo-type="dijit/layout/ContentPane" title="MGRS" style="height:80px;" data-dojo-props="selected:true">
-            <label for="locationMGRS" class="${css.label}">MGRS:</label>
-            <input data-dojo-attach-point="locationMGRS" id="locationMGRS" type="text" value="" class="${css.inputFieldMGRS}" /><br /><br />
-            <center>
-                <button data-dojo-attach-event="onclick:_onGoToMGRS">Go To</button>
-                <button data-dojo-attach-event="onclick:_onGraphicMGRS">Add Point</button>
-                <button data-dojo-attach-event="onclick:_onClearGraphic">Clear</button>
-            </center>
+    
+        <div data-dojo-attach-point="tabMGRS" data-dojo-type="dijit/layout/ContentPane" title="MGRS" class="tab" data-dojo-props="selected:true"><br />
+            <label for="inputMGRS" class="${css.label}">MGRS:</label>
+            <input data-dojo-attach-point="inputMGRS" id="inputMGRS" type="text" value="" class="${css.inputMGRS}" />
         </div>
         
-        <div data-dojo-attach-point="LocationDDDiv" data-dojo-type="dijit/layout/ContentPane" title="Lat/Lon DD">
-            <label for="locationLatDD" class="${css.label}">Latitude:</label>
-                <input data-dojo-attach-point="locationLatDD" id="locationLatDD" type="text" value="" class="${css.inputFieldDD}" />&deg;
-                <select data-dojo-attach-point="locationLatDDHemi" type="text" class="${css.selectHemi}">
+        
+        <div data-dojo-attach-point="tabUTM" data-dojo-type="dijit/layout/ContentPane" title="UTM" class="tab"><br />
+            <label for="inputUTM" class="${css.label}">UTM:</label>
+            <input data-dojo-attach-point="inputUTM" id="inputUTM" type="text" value="" class="${css.inputMGRS}" />
+        </div>
+        
+        
+        <div data-dojo-attach-point="tabLatLon" data-dojo-type="dijit/layout/ContentPane" title="Lat/Lon" class="tab">
+            
+            <label for="selectLatLonFormat" class="${css.label}">Format:</label>
+            <select data-dojo-attach-point="selectLatLonFormat" type="text" class="${css.selectLatLonFormat}" data-dojo-attach-event="onchange:_changeLatLonFormat">
+                <option value="DD" selected="selected">Decimal Degrees</option>
+                <option value="DMS">Degrees, Minutes, Seconds</option>
+            </select>
+            
+            
+            
+            <div data-dojo-attach-point="divDD">
+                <label for="inputLatDD" class="${css.label}">Latitude:</label>
+                <input data-dojo-attach-point="inputLatDD" id="inputLatDD" type="text" value="" class="${css.inputDD}" />&deg;
+                <select data-dojo-attach-point="selectLatDDHemi" type="text" class="${css.selectHemi}">
                     <option value="North" selected="selected">North</option>
                     <option value="South">South</option>
                 </select>
                 <br />
-                <label for="locationLonDD" class="${css.label}">Longitude:</label>
-                <input data-dojo-attach-point="locationLonDD" id="locationLonDD" type="text" value="" class="${css.inputFieldDD}" />&deg;
-                <select data-dojo-attach-point="locationLonDDHemi" type="text" class="${css.selectHemi}">
+                <label for="inputLonDD" class="${css.label}">Longitude:</label>
+                <input data-dojo-attach-point="inputLonDD" id="inputLonDD" type="text" value="" class="${css.inputDD}" />&deg;
+                <select data-dojo-attach-point="selectLonDDHemi" type="text" class="${css.selectHemi}">
                     <option value="West" selected="selected">West</option>
                     <option value="East">East</option>
-                </select><br /><br />
-                <center>
-                    <button data-dojo-attach-event="onclick:_onGoToDD">Go To</button>
-                    <button data-dojo-attach-event="onclick:_onGraphicDD">Add Point</button>
-                    <button data-dojo-attach-event="onclick:_onClearGraphic">Clear</button>
-                </center>
-        </div>
-        
-        <div data-dojo-attach-point="LocationDMSDiv" data-dojo-type="dijit/layout/ContentPane" title="Lat/Lon DMS">
-            <label for="locationLatD" class="${css.label}">Latitude:</label>
-                <input data-dojo-attach-point="locationLatD" id="locationLatD" type="text" value="" class="${css.inputFieldDMS}" />&deg;
-                <input data-dojo-attach-point="locationLatM" type="text" value="" class="${css.inputFieldDMS}" />'
-                <input data-dojo-attach-point="locationLatS" type="text" value="" class="${css.inputFieldDMS}" />"
-                <select data-dojo-attach-point="locationLatDMSHemi" type="text" class="${css.selectHemi}">
+                </select>
+            </div>
+            
+            <div data-dojo-attach-point="divDMS" style="display:none;">
+                <label for="inputLatD" class="${css.label}">Latitude:</label>
+                <input data-dojo-attach-point="inputLatD" id="inputLatD" type="text" value="" class="${css.inputDMS}" />&deg;
+                <input data-dojo-attach-point="inputLatM" type="text" value="" class="${css.inputDMS}" />'
+                <input data-dojo-attach-point="inputLatS" type="text" value="" class="${css.inputDMS}" />"
+                <select data-dojo-attach-point="selectLatDMSHemi" type="text" class="${css.selectHemi}">
                     <option value="North" selected="selected">North</option>
                     <option value="South">South</option>
                 </select><br />
-                <label for="locationLonD" class="${css.label}">Longitude:</label>
-                <input data-dojo-attach-point="locationLonD" id="locationLonD" type="text" value="" class="${css.inputFieldDMS}" />&deg;
-                <input data-dojo-attach-point="locationLonM" type="text" value="" class="${css.inputFieldDMS}" />'
-                <input data-dojo-attach-point="locationLonS" type="text" value="" class="${css.inputFieldDMS}" />"
-                <select data-dojo-attach-point="locationLonDMSHemi" type="text" class="${css.selectHemi}">
+                <label for="inputLonD" class="${css.label}">Longitude:</label>
+                <input data-dojo-attach-point="inputLonD" id="inputLonD" type="text" value="" class="${css.inputDMS}" />&deg;
+                <input data-dojo-attach-point="inputLonM" type="text" value="" class="${css.inputDMS}" />'
+                <input data-dojo-attach-point="inputLonS" type="text" value="" class="${css.inputDMS}" />"
+                <select data-dojo-attach-point="selectLonDMSHemi" type="text" class="${css.selectHemi}">
                     <option value="West" selected="selected">West</option>
                     <option value="East">East</option>
-                </select><br /><br />
-                <center>
-                    <button data-dojo-attach-event="onclick:_onGoToDMS">Go To</button>
-                    <button data-dojo-attach-event="onclick:_onGraphicDMS">Add Point</button>
-                    <button data-dojo-attach-event="onclick:_onClearGraphic">Clear</button>
-                </center>
+                </select>
+            </div>
+            
         </div>
         
+        
+        
     </div>
-    <center><span class="${css.smallText}">Note: Assumes a datum of WGS84. Do not include - (negative symbols) for West/South values.</span></center>
+    
+    <center>
+        <button data-dojo-attach-event="onclick:_onGoTo">Go To</button>
+        <button data-dojo-attach-event="onclick:_onAddPoint">Add Point</button>
+        <button data-dojo-attach-event="onclick:_onClearGraphic">Clear</button>
+    </center>
+    <center><span class="${css.smallText}">Note: Assumes a datum of WGS84. Do not include - (negative symbols) for West/South values.
+    <br />Click the map to fill coordinates.</span></center>
 </div>

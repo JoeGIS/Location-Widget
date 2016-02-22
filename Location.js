@@ -2,7 +2,7 @@
 ///////////////////////////////------Location.js-------//////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 // 
-// Version: 1.0
+// Version: 2.0
 // Author: Joseph Rogan (joseph.rogan@forces.gc.ca canadajebus@gmail.com)
 // 
 // 
@@ -11,12 +11,19 @@
 // 
 // Location widget example
 // var location = new Location({
-    // map: mainMap,
-    // defaultMGRS: "18T VR 45339 30260",
-    // defaultDD: {lat: "45.42372", latHemi: "North", lon: "75.69870", lonHemi: "West"},
-    // defaultDMS: {latD: "45", latM: "25", latS: "25.4", latHemi: "North", lonD: "75", lonM: "41", lonS: "55.3", lonHemi: "West"}
+    // map: mainMap
     // }, "LocationDiv");
 // location.startup();
+//
+// 
+// Changes:
+// Version 2.0
+//  - Major code structure, html template, and css changes.
+//  - Removed default field strings.
+//  - Combined Lat/Lon DD and DMS tabs.
+//  - Added place holder for future UTM tab.
+//  - Added constructor options to choose which tabs are shown.
+//  - Added feature to fill all fields on map click event
 //
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -38,6 +45,7 @@ define([
     "esri/graphic", 
     "esri/SpatialReference",  
     "esri/geometry/Point", 
+    "esri/geometry/webMercatorUtils", 
     "esri/symbols/Font", 
     "esri/symbols/SimpleMarkerSymbol",
     "esri/symbols/SimpleLineSymbol",
@@ -52,7 +60,7 @@ define([
 ], function(_WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, 
     ContentPane, TabContainer, 
     declare, lang, on, require, 
-    Color, Graphic, SpatialReference, Point, Font, SimpleMarkerSymbol, SimpleLineSymbol, TextSymbol, 
+    Color, Graphic, SpatialReference, Point, webMercatorUtils, Font, SimpleMarkerSymbol, SimpleLineSymbol, TextSymbol, 
     usng, 
     dijitTemplate)
 {
@@ -69,10 +77,11 @@ define([
         // The defaults
         defaults: {
             map: null, 
+            markerSymbol: SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,0,0,1]), 1), new Color([0,0,0,1])),
             theme: "locationWidget",
-            defaultMGRS: "",
-            defaultDD: {lat: "", latHemi: "North", lon: "", lonHemi: "West"},
-            defaultDMS: {latD: "", latM: "", latS: "", latHemi: "North", lonD: "", lonM: "", lonS: "", lonHemi: "West"}
+            showLatLon: true,
+            showMGRS: true,
+            showUTM: false
         },
         
         
@@ -84,10 +93,12 @@ define([
             
             this.css = {
                 tc: "tc",
+                tab: "tab",
                 label: "label",
-                inputFieldMGRS: "inputFieldMGRS",
-                inputFieldDD: "inputFieldDD",
-                inputFieldDMS: "inputFieldDMS",
+                selectLatLonFormat: "selectLatLonFormat", 
+                inputMGRS: "inputMGRS",
+                inputDD: "inputDD",
+                inputDMS: "inputDMS",
                 selectHemi: "selectHemi",
                 smallText: "smallText"
             };
@@ -100,26 +111,94 @@ define([
         postCreate: function() {
             this.inherited(arguments);
             
-            // Set the default values
-            this.locationMGRS.value = this.defaultMGRS;
-            this.locationLatDD.value = this.defaultDD.lat;
-            this.locationLatDDHemi.value = this.defaultDD.latHemi;
-            this.locationLonDD.value = this.defaultDD.lon;
-            this.locationLonDDHemi.value = this.defaultDD.lonHemi;
-            this.locationLatD.value = this.defaultDMS.latD;
-            this.locationLatM.value = this.defaultDMS.latM;
-            this.locationLatS.value = this.defaultDMS.latS;
-            this.locationLatDMSHemi.value = this.defaultDMS.latHemi;
-            this.locationLonD.value = this.defaultDMS.lonD;
-            this.locationLonM.value = this.defaultDMS.lonM;
-            this.locationLonS.value = this.defaultDMS.lonS;
-            this.locationLonDMSHemi.value = this.defaultDMS.lonHemi;
+            var _this = this;
+            // Wire events to fill the fields on map clicks
+            on(this.map, "click", function(evt, $_this)
+            {
+                // Get the map coordinates in lat/lon
+                var mp = webMercatorUtils.webMercatorToGeographic(evt.mapPoint);
+                
+                // If there is a Lat/Lon tab
+                if (_this.showLatLon)
+                {
+                    if (mp.y > 0)
+                    {
+                        _this.inputLatDD.value = mp.y.toFixed(5);
+                        _this.selectLatDDHemi.value = "North";
+                        
+                        _this.inputLatD.value = Math.floor(mp.y);
+                        _this.inputLatM.value = Math.floor((mp.y - Math.floor(mp.y)) * 60);
+                        _this.inputLatS.value = Math.round(((mp.y - Math.floor(mp.y) - Math.floor((mp.y - Math.floor(mp.y)) * 60)/60) * 3600) * 10) / 10;
+                        _this.selectLatDMSHemi.value = "North";
+                    }
+                    else
+                    {
+                        _this.inputLatDD.value = (mp.y.toFixed(5) * -1);
+                        _this.selectLatDDHemi.value = "South";
+                        
+                        _this.inputLatD.value = Math.floor(mp.y * -1);
+                        _this.inputLatM.value = Math.floor(((mp.y * -1) - Math.floor((mp.y * -1))) * 60);
+                        _this.inputLatS.value = Math.round((((mp.y * -1) - Math.floor((mp.y * -1)) - Math.floor(((mp.y * -1) - Math.floor((mp.y * -1))) * 60)/60) * 3600) * 10) / 10;
+                        _this.selectLatDMSHemi.value = "South";
+                    }
+                    if (mp.x > 0)
+                    {
+                        _this.inputLonDD.value = mp.x.toFixed(5);
+                        _this.selectLonDDHemi.value = "East";
+                        
+                        _this.inputLonD.value = Math.floor(mp.x);
+                        _this.inputLonM.value = Math.floor((mp.x - Math.floor(mp.x)) * 60);
+                        _this.inputLonS.value = Math.round(((mp.x - Math.floor(mp.x) - Math.floor((mp.x - Math.floor(mp.x)) * 60)/60) * 3600) * 10) / 10;
+                        _this.selectLonDMSHemi.value = "East";
+                    }
+                    else
+                    {
+                        _this.inputLonDD.value = (mp.x.toFixed(5) * -1);
+                        _this.selectLonDDHemi.value = "West";
+                        
+                        _this.inputLonD.value = Math.floor(mp.x * -1);
+                        _this.inputLonM.value = Math.floor(((mp.x * -1) - Math.floor((mp.x * -1))) * 60);
+                        _this.inputLonS.value = Math.round((((mp.x * -1) - Math.floor((mp.x * -1)) - Math.floor(((mp.x * -1) - Math.floor((mp.x * -1))) * 60)/60) * 3600) * 10) / 10;
+                        _this.selectLonDMSHemi.value = "West";
+                    }
+                }
+                
+                // If there is a UTM tab
+                if (_this.showUTM)
+                {
+                    // Get and format MGRS (Polar zones are not supported)
+                    var mgrs = usng.LLtoMGRS(mp.y, mp.x, 5);
+                    if (mgrs.indexOf("NaN") == -1) mgrs = _this._addSpacesToMGRS(mgrs);
+                    else mgrs = "Undetermined";
+                    _this.inputUTM.value = mgrs;
+                }
+                
+                // If there is a MGRS tab
+                if (_this.showMGRS)
+                {
+                    // Get and format MGRS (Polar zones are not supported)
+                    var mgrs = usng.LLtoMGRS(mp.y, mp.x, 5);
+                    if (mgrs.indexOf("NaN") == -1) mgrs = _this._addSpacesToMGRS(mgrs);
+                    else mgrs = "Undetermined";
+                    _this.inputMGRS.value = mgrs;
+                }
+                
+                
+            });
+            
+            
+            // Remove tabs that have had showName set to false
+            if (!this.showLatLon) this.tc.removeChild(this.tabLatLon);
+            if (!this.showUTM) this.tc.removeChild(this.tabUTM);
+            if (!this.showMGRS) this.tc.removeChild(this.tabMGRS);
             
         },
         
+        
+        
         // Called when the widget resize event is fired (required for layout widgets within template)
         resize: function() {
-            this.LocationTabContainer.resize(arguments);
+            this.tc.resize(arguments);
         },
         
         
@@ -128,44 +207,91 @@ define([
             this.inherited(arguments);
         },
         
-        
-        // Pans and centers to MGRS coordinate
-        _onGoToMGRS: function() {
-            // Convert the MGRS back to latlng and set it to the features geometry
-            var latlng = [];
-            latlong = usng.USNGtoLL(this.locationMGRS.value, latlng);
-            
-            // Go to the location
-            this._goTo(latlng[0], latlng[1]);
+        // Called when the lat/lon format is changed
+        _changeLatLonFormat: function() {
+            if (this.selectLatLonFormat.value == "DD")
+            {
+                this.divDD.style.display = "";
+                this.divDMS.style.display = "none";
+            }
+            else if (this.selectLatLonFormat.value == "DMS")
+            {
+                this.divDD.style.display = "none";
+                this.divDMS.style.display = "";
+            }
         },
         
         
-        // Pans and centers to DD coordinate
-        _onGoToDD: function () {
-            // Calculate the decimal degrees values
-            var lat = Number(this.locationLatDD.value);
-            if (this.locationLatDDHemi.value == "South") lat *= -1;
-            
-            var lon = Number(this.locationLonDD.value);
-            if (this.locationLonDDHemi.value == "West") lon *= -1;
-            
-            // Go to the location
-            this._goTo(lat, lon);
+        // Called when the Go To button is clicked
+        _onGoTo: function() {
+            this._onActionPoint("GoTo");
         },
         
         
-        // Pans and centers to DMS coordinate
-        _onGoToDMS: function () {
-            // Calculate the decimal degrees values
-            var lat = Number(this.locationLatD.value) + (Number(this.locationLatM.value) / 60) + (Number(this.locationLatS.value) / 3600);
-            if (this.locationLatDMSHemi.value == "South") lat *= -1;
+        // Called when the Add Point button is clicked
+        _onAddPoint: function() {
+            this._onActionPoint("AddPoint");
+        },
+        
+        
+        // Called when an action needs to be performed on a point, either GoTo or AddPoint
+        _onActionPoint: function(action) {
             
-            var lon = Number(this.locationLonD.value) + (Number(this.locationLonM.value) / 60) + (Number(this.locationLonS.value) / 3600);
-            if (this.locationLonDMSHemi.value == "West") lon *= -1;
-            
-            // Go to the location
-            this._goTo(lat, lon);
-        }, 
+            // React based on the tab that is selected
+            // MGRS tab
+            if (this.tc.selectedChildWidget.title == "MGRS")
+            {
+                // Convert the MGRS back to latlng and set it to the features geometry
+                var latlng = [];
+                latlong = usng.USNGtoLL(this.inputMGRS.value, latlng);
+                
+                // Do the action
+                if (action == "GoTo") this._goTo(latlng[0], latlng[1]);
+                else if (action == "AddPoint") this._addPoint(latlng[0], latlng[1]);
+            }
+            // UTM tab
+            else if (this.tc.selectedChildWidget.title == "UTM")
+            {
+                // Convert the MGRS back to latlng and set it to the features geometry
+                var latlng = [];
+                latlong = usng.USNGtoLL(this.inputUTM.value, latlng);
+                
+                // Do the action
+                if (action == "GoTo") this._goTo(latlng[0], latlng[1]);
+                else if (action == "AddPoint") this._addPoint(latlng[0], latlng[1]);
+            }
+            // Lat/Lon tab
+            else if (this.tc.selectedChildWidget.title == "Lat/Lon")
+            {
+                // Format that is select
+                if (this.selectLatLonFormat.value == "DD")
+                {
+                    // Calculate the decimal degrees values
+                    var lat = Number(this.inputLatDD.value);
+                    if (this.selectLatDDHemi.value == "South") lat *= -1;
+                    
+                    var lon = Number(this.inputLonDD.value);
+                    if (this.selectLonDDHemi.value == "West") lon *= -1;
+                    
+                    // Do the action
+                    if (action == "GoTo") this._goTo(lat, lon);
+                    else if (action == "AddPoint") this._addPoint(lat, lon);
+                }
+                else if (this.selectLatLonFormat.value == "DMS")
+                {
+                    // Calculate the decimal degrees values
+                    var lat = Number(this.inputLatD.value) + (Number(this.inputLatM.value) / 60) + (Number(this.inputLatS.value) / 3600);
+                    if (this.selectLatDMSHemi.value == "South") lat *= -1;
+                    
+                    var lon = Number(this.inputLonD.value) + (Number(this.inputLonM.value) / 60) + (Number(this.inputLonS.value) / 3600);
+                    if (this.selectLonDMSHemi.value == "West") lon *= -1;
+                    
+                    // Do the action
+                    if (action == "GoTo") this._goTo(lat, lon);
+                    else if (action == "AddPoint") this._addPoint(lat, lon);
+                }
+            }
+        },
         
         
         // Goes to a lat, lon location
@@ -181,63 +307,30 @@ define([
         },
         
         
-        // Creates a graphic at the MGRS coordinate
-        _onGraphicMGRS: function () {
-            // Convert the MGRS back to latlng and set it to the features geometry
-            var latlng = [];
-            latlong = usng.USNGtoLL(this.locationMGRS.value, latlng);
-            
-            // Add the point
-            this._addPoint(latlng[0], latlng[1]);
-        },
-        
-        // Creates a graphic at the DD coordinate
-        _onGraphicDD: function () {
-            // Calculate the decimal degrees values
-            var lat = Number(this.locationLatDD.value);
-            if (this.locationLatDDHemi.value == "South") lat *= -1;
-            
-            var lon = Number(this.locationLonDD.value);
-            if (this.locationLonDDHemi.value == "West") lon *= -1;
-            
-            // Add the point
-            this._addPoint(lat, lon);
-        },
-        
-        
-        // Creates a graphic at the DMS coordinate
-        _onGraphicDMS: function () {
-            // Calculate the decimal degrees values
-            var lat = Number(this.locationLatD.value) + (Number(this.locationLatM.value) / 60) + (Number(this.locationLatS.value) / 3600);
-            if (this.locationLatDMSHemi.value == "South") lat *= -1;
-            
-            var lon = Number(this.locationLonD.value) + (Number(this.locationLonM.value) / 60) + (Number(this.locationLonS.value) / 3600);
-            if (this.locationLonDMSHemi.value == "West") lon *= -1;
-            
-            // Add the point
-            this._addPoint(lat, lon);
-        }, 
-        
-        
         
         // Add the point to the map
         _addPoint: function (lat, lon) {
             // Text symbol
-            // var symbol = new TextSymbol(this.locationMGRS.value).setColor(
+            // var symbol = new TextSymbol(this.inputMGRS.value).setColor(
                 // new Color([0,0,0,1])).setAlign(Font.ALIGN_START).setAngle(0).setDecoration("none").setFont(
                 // new Font("12pt").setWeight(Font.WEIGHT_NORMAL).setStyle(Font.STYLE_NORMAL).setFamily("Arial"));
             
-            // Marker symbol
-            symbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.STYLE_CIRCLE, 10, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([0,0,0,1]), 1), new Color([0,0,0,1]));
                     
             // Add to the map's graphics layer
-            this.map.graphics.add(new Graphic(new Point(lon, lat, new SpatialReference({wkid: 4326})), symbol));
+            this.map.graphics.add(new Graphic(new Point(lon, lat, new SpatialReference({wkid: 4326})), this.markerSymbol));
         },
         
         
         // Clears all graphics
         _onClearGraphic: function () {
             this.map.graphics.clear();
+        },
+        
+        
+        // Adds spaces to an mgrs string
+        _addSpacesToMGRS: function(mgrs) {
+            if (mgrs.length == 14) mgrs = "0" + mgrs;
+            return mgrs.substr(0, mgrs.length-12) + " " + mgrs.substr(mgrs.length-12, mgrs.length-13) + " " + mgrs.substr(mgrs.length-10, mgrs.length-10)  + " " + mgrs.substr(mgrs.length-5);
         }
         
     });

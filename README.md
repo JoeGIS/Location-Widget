@@ -14,9 +14,6 @@ An ArcGIS for JavaScript API widget for finding map locations in different coord
 - MGRS polar regions (outside latitude -80, +84) are not supported
 
 ### Future Changes
-- Add map click event that fills all fields.
-- Remove constructor options for default field values.
-- Add option to toggle which coordinate notation tabs are created.
 - Clear button clears only graphics added by this widget.
 - Add more coordinate notations (DDS, UTM, what3words, etc)
 
@@ -24,10 +21,7 @@ An ArcGIS for JavaScript API widget for finding map locations in different coord
 
 ```javascript
 var location = new Location({
-    map: mainMap,
-    defaultMGRS: "18T VR 45339 30260",
-    defaultDD: {lat: "45.42372", latHemi: "North", lon: "75.69870", lonHemi: "West"},
-    defaultDMS: {latD: "45", latM: "25", latS: "25.4", latHemi: "North", lonD: "75", lonM: "41", lonS: "55.3", lonHemi: "West"}
+    map: mainMap
     }, "LocationDiv");
 location.startup();
 ```
@@ -65,11 +59,12 @@ Location(options, srcNode);
 ### Options (Object)
 |property|required|type|value|description|
 |---|---|---|---|---|
+|map|x|Map|null|ArcGIS JS Map.|
+|markerSymbol||SimpleMarkerSymbol||ArcGIS JS SimpleMarkerSymbol for placing a point.|
 |theme||string|locationWidget|CSS Class for uniquely styling the widget.|
-|map|x|Map|null|ArcGIS JS Map|
-|defaultMGRS||string|||
-|defaultDD||object|||
-|defaultDMS||object|||
+|showLatLon||boolean|true|Shows the Lat/Lon tab.|
+|showMGRS||boolean|true|Shows the MGRS tab.|
+|showUTM||boolean|false|Shows the UTM tab.  Incomplete functionality.|
 
 ## Methods
 ### startup
