@@ -19,7 +19,6 @@ An ArcGIS for JavaScript API widget for finding map locations in different coord
 - Add more coordinate notations (Lat/Lon DDS, UTM, etc)
 
 ## Quickstart
-
 ```javascript
 var location = new Location({
     map: mainMap
