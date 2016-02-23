@@ -48,7 +48,7 @@ var dojoConfig = {
 ```
 
 ## Require module
-Include the module for the LayerList.
+Include the module for the Location widget.
 
 ```javascript
 require(["application/Location", ... ], function(Location, ... ){ ... });
