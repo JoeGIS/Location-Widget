@@ -1,7 +1,10 @@
 
+.locationWidget {
+    white-space: nowrap;
+}
+
 .locationWidget .tc {
     width: 310px;
-    height: 100px;
 }
 
 .locationWidget .tab {

@@ -2,7 +2,7 @@
 ///////////////////////////////------Location.js-------//////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 // 
-// Version: 2.1
+// Version: 2.2
 // Author: Joseph Rogan (joseph.rogan@forces.gc.ca canadajebus@gmail.com)
 // 
 // 
@@ -17,6 +17,8 @@
 //
 // 
 // Changes:
+// Version 2.2
+//  -Added .locationWidget { white-space: nowrap; } to css file
 // Version 2.1
 //  - Added what3words support.  Requires API key and internet access.
 // Version 2.0
